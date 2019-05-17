@@ -1,1 +1,5 @@
 jupyter==1.0.0
+essentia==2.1b5.dev532
+numpy==1.16.3
+matplotlib==3.0.3
+scipy==1.2.1
