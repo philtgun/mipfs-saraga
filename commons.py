@@ -1,18 +1,36 @@
-import os
+import IPython
 import essentia.standard as ess
 import numpy as np
+import os
 import json
-import IPython
+from copy import deepcopy
+
 import config
+
+
+def display_audio(audio):
+    IPython.display.display(IPython.display.Audio(audio, rate=config.SAMPLING_RATE))
+
+
+def extract_pitch(audio):
+    audio_eqd = ess.EqualLoudness()(audio)
+    pitch, confidence = ess.PitchMelodia(hopSize=config.HOP_SIZE)(audio_eqd)
+    return pitch, confidence
+
+
+def get_plot_pitch(pitch):
+    pitch_plot = deepcopy(pitch)
+    pitch_plot[pitch == 0] = np.nan
+    return pitch_plot
 
 
 def get_track_list_from_directory(tradition):
     """Helper function to get the list of all tracks from data folders"""
-    files_all = os.listdir(os.path.join(DATA_PATH, tradition))
+    files_all = os.listdir(os.path.join(config.DATA_PATH, tradition))
     [print(filename.replace('.mp3', '')) for filename in sorted(files_all) if filename.endswith('.mp3')]
 
 
-def load_track(tradition, name, fs=SAMPLING_RATE):
+def load_track(tradition, name, fs=config.SAMPLING_RATE):
     """Loads audio, metadata and melodic phrases"""
     path = os.path.join(config.DATA_PATH, tradition, name)
     audio = ess.MonoLoader(filename=path + '.mp3', sampleRate=fs)()
@@ -25,7 +43,7 @@ def load_track(tradition, name, fs=SAMPLING_RATE):
 
 
 def get_track_list(tradition):
-    path = os.path.join(DATA_PATH, tradition + '.txt')
+    path = os.path.join(config.DATA_PATH, tradition + '.txt')
     return np.genfromtxt(path, dtype=np.str, delimiter=256)
 
 
@@ -40,14 +58,3 @@ def collate_phrases(phrases, fs=config.SAMPLING_RATE):
             phrases_dict[phrase] = []
         phrases_dict[phrase].append([start_ind, stop_ind])
     return phrases_dict
-
-
-def display_audio(audio):
-    IPython.display.display(IPython.display.Audio(audio, rate=config.SAMPLING_RATE))
-
-
-def extract_pitch(audio):
-    audio_eqd = ess.EqualLoudness()(audio)
-    pitch, confidence = ess.PitchMelodia()(audio_eqd)
-    pitch[pitch == 0] = np.nan
-    return pitch, confidence
