@@ -1,0 +1,2 @@
+DATA_PATH = 'data'
+SAMPLING_RATE = 44100
