@@ -41,6 +41,24 @@ def load_track(tradition, name, fs=config.SAMPLING_RATE):
         metadata = json.load(fp)
     return audio, metadata, phrases
 
+def get_pitch_contour_indices(path):
+    """Gets the timestamps of detected pitch contours"""
+    pitch_data = np.loadtxt(path + '.pitch.txt')
+    pitch_data_marker=pitch_data[:,1]
+    pitch_data_marker[np.where(pitch_data_marker!=0)]=1
+    pitch_contour_trans=np.diff(pitch_data_marker)
+    pitch_contour_start=np.where(pitch_contour_trans==1)[0]+1
+    pitch_contour_end=np.where(pitch_contour_trans==-1)[0]
+    return [pitch_data[pitch_contour_start,0],pitch_data[pitch_contour_end,0]]
+
+def load_pitch_segments(tradition, name, fs=config.SAMPLING_RATE):
+    """Loads audio, metadata and pitch contours"""
+    path = os.path.join(config.DATA_PATH, tradition, name)
+    audio = ess.MonoLoader(filename=path + '.mp3', sampleRate=fs)()
+    pitch_contour_indices = get_pitch_contour_indices(path)
+    with open(path + '.json') as fp:
+        metadata = json.load(fp)
+    return audio, metadata, pitch_contour_indices
 
 def get_track_list(tradition):
     path = os.path.join(config.DATA_PATH, tradition + '.txt')
